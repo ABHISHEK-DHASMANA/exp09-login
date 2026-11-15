@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login System</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    input { display: block; margin: 8px auto; padding: 6px; width: 200px; }
+    button { padding: 6px 12px; margin: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Login System</h1>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <button onclick="profile()">My Profile</button>
+  <button onclick="logout()">Logout</button>
+
+  <p id="message"></p>
+
+  <script>
+    var message = document.getElementById("message");
+
+    function send(url) {
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value
+        })
+      }).then(function (r) { return r.json(); });
+    }
+
+    function register() {
+      send("/api/register").then(function (d) { message.textContent = d.message; });
+    }
+
+    function login() {
+      send("/api/login").then(function (d) {
+        if (d.token) localStorage.setItem("token", d.token);   // save the token
+        message.textContent = d.message;
+      });
+    }
+
+    function profile() {
+      fetch("/api/profile", {
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          message.textContent = d.email ? "Logged in as: " + d.email : d.message;
+        });
+    }
+
+    function logout() {
+      localStorage.removeItem("token");   // delete the token = logout
+      message.textContent = "Logged out";
+    }
+  </script>
+</body>
+</html>
